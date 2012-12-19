@@ -4,50 +4,65 @@
 double accelerometer_data[3];
 double gyro_data[3];
 
+ADXL345Sensor accSensor;
+
+
 void setup() 
 { 
   
    Serial.begin(9600);  
    
    i2cInterface::init();
-   SensorsManager::getSensorsManager().init();
+   accSensor.init();
+   
+   init_itg3200();   
 }
 
+void read_itg3200() 
+{
+  byte bytes[6];
+  memset(bytes,0,6);
 
-
+  //read 6 bytes from the ITG3200
+  //now unpack the bytes
+  i2cInterface::i2c_read(ITG3200_ADDRESS, 
+  
+                         ITG3200_REGISTER_XMSB, 
+                         6, 
+                         &bytes[0]);  
+  
+  double scale = 2000.0/double(2<<15);
+  for (int i=0; i<3; ++i) {
+    short int tmp = (int)bytes[2*i + 1] + (((int)bytes[2*i]) << 8);
+    
+    gyro_data[i]=tmp/(14.375);//*scale;
+  }
+}
 
 void loop() 
 {
-  static double time_elapsed=0.0;
-  SensorsManager & sm=SensorsManager::getSensorsManager();    
-  sm.update(time_elapsed);
   
-  /*
+   accSensor.get_readings(accelerometer_data);
    Serial.print("ACCEL: ");
-   Serial.print(sm.getAcceleration()[0]);
+   Serial.print(accelerometer_data[0]);
    Serial.print("\t");
-   Serial.print(sm.getAcceleration()[1]);
+   Serial.print(accelerometer_data[1]);
    Serial.print("\t");
-   Serial.print(sm.getAcceleration()[2]);
+   Serial.print(accelerometer_data[2]);
+   Serial.print("\n");
+  
+   Serial.print((2<<13));
+  
+   read_itg3200();
+
+  Serial.print("GYRO: ");
+   Serial.print(gyro_data[0]);
+   Serial.print("\t");
+   Serial.print(gyro_data[1]);
+   Serial.print("\t");
+   Serial.print(gyro_data[2]);
    Serial.print("\n");
   
   
-   Serial.print("GYRO: ");
-   Serial.print(sm.getAngleAcceleration()[0]);
-   Serial.print("\t");
-   Serial.print(sm.getAngleAcceleration()[1]);
-   Serial.print("\t");
-   Serial.print(sm.getAngleAcceleration()[2]);
-   Serial.print("\n");
-   */
-     
-   Serial.print("NORTH: ");
-   Serial.print(sm.getNorth()[0]);
-   Serial.print("\t");
-   Serial.print(sm.getNorth()[1]);
-   Serial.print("\t");
-   Serial.print(sm.getNorth()[2]);
-   Serial.print("\n");
- 
-   delay(300); time_elapsed+=300*(10E-6);
+   delay(300);
 }
