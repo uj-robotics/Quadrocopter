@@ -1,4 +1,5 @@
 /** 
+
 * @file sensors.h 
 * @brief definicje klas wszystkich sensorow + funkcje pomocnicze
 *
@@ -61,17 +62,15 @@ class ADXL345Sensor: public Sensor
 {
       double m_update_freq; //co ile samplowac [ms]
       double m_data_range; //+ - ilosc g
-      static const int ADXL345_ADDRESS;
-      //There are 6 data registers, they are sequential starting 
-      //with the LSB of X.  We'll read all 6 in a burst and won't
-      //address them individually
-      static const int ADXL345_REGISTER_XLSB;
-     //Need to set power control bit to wake up the adxl345
-      static const int ADXL_REGISTER_PWRCTL;
-      static const int ADXL_PWRCTL_MEASURE;
-      static const int ADXL_DATA_FORMAT;
-      static const double ADXL_MAX_RANGE;
-      static const double ADXL_MAX_READ;      
+       static const int ADXL345_ADDRESS=(0xA6>> 1);
+       static const int ADXL345_REGISTER_XLSB = (0x32);
+       static const int ADXL_REGISTER_PWRCTL =(0x2D);
+       static const int ADXL_PWRCTL_MEASURE =(1 << 3);
+       static const int ADXL_DATA_FORMAT =(0x31);
+       static const double ADXL_MAX_RANGE = 10.0;
+      static const double ADXL_MAX_READ=2000;    
+      
+       
 public:
       ADXL345Sensor();
       void init();
@@ -95,7 +94,7 @@ public:
 #define ITG3200_REGISTER_DLPF_FS (0x16)
 #define ITG3200_FULLSCALE (0x03 << 3)
 #define ITG3200_42HZ (0x03)
-
+#define ITG3200_MAX_READ 10000
 
 void init_itg3200();
 

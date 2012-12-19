@@ -45,33 +45,42 @@ void i2cInterface::i2c_read(int address,
  Wire.endTransmission();
 }
 
-const int ADXL345Sensor::ADXL345_ADDRESS=(0xA6>> 1);
-const int ADXL345Sensor::ADXL345_REGISTER_XLSB = (0x32);
-const int ADXL345Sensor::ADXL_REGISTER_PWRCTL =(0x2D);
-const int ADXL345Sensor::ADXL_PWRCTL_MEASURE =(1 << 3);
-const int ADXL345Sensor::ADXL_DATA_FORMAT (0x31);
-const double ADXL345Sensor::ADXL_MAX_RANGE = 10.0;
-const double ADXL345Sensor::ADXL_MAX_READ=256.0;     
+  
 
 
 void ADXL345Sensor::get_readings(double * data) 
 {
- byte bytes[6];
- memset(bytes,0,6);
+  byte bytes[6];
+  
+  
+  memset(bytes,0,6);
 
- //read 6 bytes from the ADXL345
- i2cInterface::i2c_read(ADXL345Sensor::ADXL345_ADDRESS, ADXL345Sensor::ADXL345_REGISTER_XLSB, 6, bytes);
- double scale = m_data_range/(1024.0);
- //now unpack the bytes
- for (int i=0;i<3;++i) 
- {   
-   data[i] = ((int)bytes[2*i] + (((int)bytes[2*i + 1]) << 8))*scale;
-   data[i] = data[i]>ADXL345Sensor::ADXL_MAX_RANGE ? (data[i]-ADXL345Sensor::ADXL_MAX_READ) : data[i];
- }
+  //read 6 bytes from the ADXL345
+  i2cInterface::i2c_read(ADXL345Sensor::ADXL345_ADDRESS, ADXL345Sensor::ADXL345_REGISTER_XLSB, 6, bytes);
+  double scale = m_data_range/(1024.0);
+  //now unpack the bytes
+
+  int tmp=0;
+  short int tmp2=0;
+  for (int i=0;i<3;++i) 
+  {   
+  //  tmp = ((int)bytes[2*i] + (((int)bytes[2*i + 1]) << 8));
+    //data[i] =tmp;
+    //tmp = ((int)bytes[2*i] + (((int)bytes[2*i + 1]) << 8));//*scale;
+    tmp2=((int)bytes[2*i] + (((int)bytes[2*i + 1]) << 8));//*scale;
+    //tmp = tmp>ADXL345Sensor::ADXL_MAX_READ ? (-((~last_bit)&tmp)) : tmp;
+    
+    data[i]=(double)tmp2*scale;
+  }
+  
 }
 
  ADXL345Sensor::ADXL345Sensor(): m_update_freq(0.0001), m_data_range(4)
  {}
+ 
+ 
+ 
+ 
  void ADXL345Sensor::init()
  {
     byte data = 0;
@@ -79,11 +88,11 @@ void ADXL345Sensor::get_readings(double * data)
     i2cInterface::i2c_write(ADXL345Sensor::ADXL345_ADDRESS, ADXL345Sensor::ADXL_REGISTER_PWRCTL, ADXL345Sensor::ADXL_PWRCTL_MEASURE); //wlaczenie w prawidlowy tr
     i2cInterface::i2c_read(ADXL345Sensor::ADXL345_ADDRESS, ADXL345Sensor::ADXL_REGISTER_PWRCTL, 1, &data);
  }
- void ADXL345Sensor::get_readings(double * acc);
 
 
 void init_itg3200() 
 {
+     
   byte data = 0;
 
   //Set DLPF to 42 Hz (change it if you want) and
@@ -94,6 +103,7 @@ void init_itg3200()
   i2cInterface::i2c_read(ITG3200_ADDRESS, ITG3200_REGISTER_DLPF_FS, 1, &data);
 
   Serial.println((unsigned int)data);
+
 }
 
 
