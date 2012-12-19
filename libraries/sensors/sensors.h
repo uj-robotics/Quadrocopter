@@ -75,17 +75,7 @@ public:
       ADXL345Sensor();
       void init();
       void get_readings(double * data);
-};
-
-
- 
- 
- 
- 
- 
- 
- 
- 
+}; 
  
  
  #define ITG3200_ADDRESS (0xD0 >> 1)
@@ -97,5 +87,21 @@ public:
 #define ITG3200_MAX_READ 10000
 
 void init_itg3200();
+
+class Magnetometer
+{
+private:
+  static const int HMC5843_ADDRESS = (0x3C >> 1);
+  static const int HMC5843_REGISTER_XMSB = (0x03);
+  static const int HMC5843_REGISTER_MEASMODE = (0x02);
+  static const int HMC5843_MEASMODE_CONT = (0x00);
+
+public:
+  int data[6];
+
+  Magnetometer();
+
+  void read();
+};
 
 #endif

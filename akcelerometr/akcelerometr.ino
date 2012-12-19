@@ -35,7 +35,7 @@ void read_itg3200()
   for (int i=0; i<3; ++i) {
     short int tmp = (int)bytes[2*i + 1] + (((int)bytes[2*i]) << 8);
     
-    gyro_data[i]=tmp*scale;
+    gyro_data[i]=tmp/(14.375);//*scale;
   }
 }
 

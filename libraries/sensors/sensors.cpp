@@ -106,4 +106,32 @@ void init_itg3200()
 
 }
 
+//Magnetometer
+
+  Magnetometer::Magnetometer()
+  {
+    byte data = 0;
+    
+    //set up continuous measurement
+    i2cInterface::i2c_write(HMC5843_ADDRESS, HMC5843_REGISTER_MEASMODE, HMC5843_MEASMODE_CONT);
+
+    //Sanity check, make sure the register value is correct.
+    i2cInterface::i2c_read(HMC5843_ADDRESS, HMC5843_REGISTER_MEASMODE, 1, &data);
+    Serial.println((unsigned int)data);
+
+  }
+
+  void Magnetometer::read()
+  {
+     byte bytes[6];
+     memset(bytes,0,6);
+
+      //read 6 bytes from the HMC5843
+     i2cInterface::i2c_read(HMC5843_ADDRESS, HMC5843_REGISTER_XMSB, 6, bytes);
+
+      //now unpack the bytes
+     for (int i=0;i<3;++i) 
+      data[i] = (int)bytes[2*i + 1] + (((int)bytes[2*i]) << 8);
+     
+  }
 
