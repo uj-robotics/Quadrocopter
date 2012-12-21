@@ -11,8 +11,8 @@ void setup()
   
    Serial.begin(9600);  
    
-   //i2cInterface::init();
-   //SensorsManager::getSensorsManager().init();
+   i2cInterface::init();
+   SensorsManager::getSensorsManager().init();
    mb.init();
 }
 
@@ -21,9 +21,9 @@ void setup()
 
 void loop() 
 {
-  //static double time_elapsed=0.0;
-  //SensorsManager & sm=SensorsManager::getSensorsManager();    
-  //sm.update(time_elapsed);
+  static double time_elapsed=0.0;
+  SensorsManager & sm=SensorsManager::getSensorsManager();    
+  sm.update(time_elapsed);
   
   /*
    Serial.print("ACCEL: ");
@@ -54,6 +54,7 @@ void loop()
  
    delay(300); time_elapsed+=300*(10E-6);*/
    
+   delay(300);
    Serial.print("ULTRA: ");
    mb.get_readings(&ultrasonar_data);
    Serial.println(ultrasonar_data);

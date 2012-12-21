@@ -57,7 +57,7 @@ void ADXL345Sensor::get_readings(double * data)
 
   //read 6 bytes from the ADXL345
   i2cInterface::i2c_read(ADXL345Sensor::ADXL345_ADDRESS, ADXL345Sensor::ADXL345_REGISTER_XLSB, 6, bytes);
-  double scale = m_data_range/(1024.0);
+  //double scale = 1.0;// m_data_range/(1024.0);
   //now unpack the bytes
 
   int tmp=0;
@@ -70,7 +70,7 @@ void ADXL345Sensor::get_readings(double * data)
     tmp2=((int)bytes[2*i] + (((int)bytes[2*i + 1]) << 8));//*scale;
     //tmp = tmp>ADXL345Sensor::ADXL_MAX_READ ? (-((~last_bit)&tmp)) : tmp;
     
-    data[i]=(double)tmp2*scale;
+    data[i]=(double)tmp2;//*scale;
   }
   
 }
@@ -121,7 +121,7 @@ void ITG3200Sensor::get_readings(double * data)
   for (int i=0; i<3; ++i) {
     short int tmp = (int)bytes[2*i + 1] + (((int)bytes[2*i]) << 8);
     
-    data[i]=tmp/(14.375);
+    data[i]=tmp;///(14.375);
   }
 
 }
@@ -171,14 +171,24 @@ void SensorsManager::init(){
 */
 void SensorsManager ::update(double t){
      //akcelerometr:
-     if(t-m_last_update[0] > m_acc.get_update_freq()){ m_last_update[0]=t; m_acc.get_readings(m_raw_data[0]); }
+     if(t-m_last_update[0] > m_acc.get_update_freq()){ 
+                           m_last_update[0]=t; 
+                           m_acc.get_readings(m_raw_data[0]); 
+                           for(int i=0;i<3;++i) m_data[0][i] = (m_raw_data[0][i] - m_acc_params[i][0])*m_acc_params[i][1];
+     }
      //zeroskop:
-     if(t-m_last_update[1] > m_gyro.get_update_freq()){ m_last_update[1]=t; m_gyro.get_readings(m_raw_data[1]); }
+     if(t-m_last_update[1] > m_gyro.get_update_freq()){ 
+                           m_last_update[1]=t; 
+                           m_gyro.get_readings(m_raw_data[1]);
+                           for(int i=0;i<3;++i) m_data[1][i] = (m_raw_data[1][i] - m_gyro_params[i][0])*m_gyro_params[i][1];
+     }
      
-     if(t-m_last_update[2] > m_compass.get_update_freq()){ m_last_update[2]=t; m_compass.get_readings(m_raw_data[2]); }
+     if(t-m_last_update[2] > m_compass.get_update_freq()){ 
+                           m_last_update[2]=t; m_compass.get_readings(m_raw_data[2]); 
+                           for(int i=0;i<3;++i) m_data[2][i] = (m_raw_data[2][i] - m_compass_params[i][0])*m_compass_params[i][1];
+     }
      
 }
-
 
 
 

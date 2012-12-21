@@ -123,23 +123,73 @@ private:
 	static const int MB1260_PULSE_WIDTH_PIN = 7;
 };
 
-
+//TODO: rozbic SensorsManager na akcelerometr/gyroskop.. itp (ktore beda mialy ws obie np "ITG3200Sensor")), one powinny
+//zajmowac sie swoja kalibracja w srodku i zwracac juz skalibrowane wyniki
 class SensorsManager
 {
   SensorsManager();  //singleton 
   static const int m_sensors=3;
   ITG3200Sensor m_gyro; ADXL345Sensor m_acc; HMC5843Sensor m_compass;
-  double m_last_update[3];
-  double m_raw_data[3][3];
   
+  
+  
+  double m_last_update[4];
+  double m_raw_data[4][3];
+  double m_data[4][3];
+  
+  
+  
+  //mozna wrzucic do klasy obslugujacej akcelerometr bezposrednio, to w przyszlosci
+  double m_acc_params[3][2]; //zakres i zero (ustawiane przez OnePointCallibration(), potem przez gettery)
+  double m_gyro_params[3][2];
+  double m_compass_params[3][2];
 public:
+  //trywialna kalibracja, mierzy zero majac skale. Do zrobienia : regresja liniowa . O dziwo kompas jest spoko skalibrowany.
+  //Sonar tez o ile jest tuba
+  void OnePointCallibration(){
+       m_acc_params[0][0] = 0.0;
+       m_acc_params[0][1] = 4.0/1024.0; //skala akcelerometru
+       m_acc_params[1][0]=0.0;
+       m_acc_params[1][1] = 4.0/1024.0; 
+       m_acc_params[2][0]=0.0;
+       m_acc_params[2][1]=4.0/1024.0;
+
+
+       m_gyro_params[0][0] = 0.0;
+       m_gyro_params[0][1] = 1/14.375; 
+       m_gyro_params[1][0]=0.0;
+       m_gyro_params[1][1] = 1/14.375; //skala zyroskopu
+       m_gyro_params[2][0]=0.0;
+       m_gyro_params[2][1]=1/14.375; 
+       
+       m_compass_params[0][0] = 0.0;
+       m_compass_params[0][1] = 1.0;
+       m_compass_params[1][0]=0.0;
+       m_compass_params[1][1] = 1.0;
+       m_compass_params[2][0]=0.0;
+       m_compass_params[2][1]=1.0; //skala kompasu          
+       
+       double max_latency = 0.1; //[miliseconds]
+       double readings[3][3]; 
+       
+       for(int i=0;i<3;++i) {delay(max_latency*1000); m_acc.get_readings(readings[i]);}
+       for(int i=0;i<3;++i) m_acc_params[i][0] = (readings[0][i]+readings[1][i]+readings[2][i])/3.0;
+       m_acc_params[2][0]-=(1.0/m_acc_params[2][1]); //+1g na Z     
+
+       for(int i=0;i<3;++i) {delay(max_latency*1000); m_gyro.get_readings(readings[i]);}
+       for(int i=0;i<3;++i) m_gyro_params[i][0] = (readings[0][i]+readings[1][i]+readings[2][i])/3.0;
+      
+       
+  }
   void init();
-   const double * getNorth() const{ return m_raw_data[2]; }
-  const double * getAngleAcceleration() const{ return m_raw_data[1];}
-  const double * getAcceleration() const{ return m_raw_data[0]; }
+   const double * getNorth() const{ return m_data[2]; }
+  const double * getAngleAcceleration() const{ return m_data[1];}
+  const double * getAcceleration() const{ return m_data[0]; }
   static SensorsManager & getSensorsManager();
   void update(double t);
 };
+
+ 
 
  
 
