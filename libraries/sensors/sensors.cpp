@@ -125,14 +125,33 @@ void ITG3200Sensor::get_readings(double * data)
   }
 
 }
- 
+
+//Ultrasonar MB1260
+
+void MB1260Sensor::init()
+{
+	pinMode(this->MB1260_PULSE_WIDTH_PIN, INPUT);
+}
+
+double MB1260Sensor::get_update_freq() const
+{
+	return this->m_update_freq;
+}
+
+void MB1260Sensor::get_readings(double* data)
+{
+	int pulse = pulseIn(this->MB1260_PULSE_WIDTH_PIN, HIGH);
+	*data = static_cast<double>(pulse) / 58;
+}
+
+
  
  
 SensorsManager::SensorsManager(){
     for(int i=0;i<m_sensors;++i) m_last_update[i]=0;
 } 
  
-SensorsManager & SensorsManager::getSensorsManager(){
+SensorsManager& SensorsManager::getSensorsManager(){
                static SensorsManager sm;
                return sm;
 }

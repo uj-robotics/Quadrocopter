@@ -110,6 +110,19 @@ public:
       void get_readings(double * data);
 };
 
+class MB1260Sensor : public Sensor
+{
+public:
+	MB1260Sensor(): m_update_freq(0.1) {}
+	void init();
+	double get_update_freq() const;
+	void get_readings(double* data);
+
+private:
+	double m_update_freq;
+	static const int MB1260_PULSE_WIDTH_PIN = 7;
+};
+
 
 class SensorsManager
 {
