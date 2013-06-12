@@ -14,14 +14,45 @@
 EnginesManager Engines;
 
 double time_elapsed;
+
 unsigned int LED_RED=4;
 unsigned int LED_GREEN=2;
 unsigned int LED_YELLOW=3;
 
+// PID stale //
+double KP_x ,KP_y;
+double KD_x, KD_y;
+double KI_x, KI_y;
+
+double u_x, u_y, u_z, u_h; // wartosci kontrolowane u_x,u_y to roznica w predkosci zgodny_z_osi - przeciwny_do_osi, u_z nie ma, u_h to wielkosc bazowa
+double u_base = 15.0; //ile zawsze powinno byc
+
+//pamiec
+double e_x_prev=0.0, e_y_prev=0.0;
+double E_x_sum =0.0, E_y_sum =0.0;
+double de_x, de_y;
+
+//sampling time in ms
+double SAMPLING_MS = 10.0;
+
+void set_tunings_y(double KP, double KI, double KD)
+{
+   double SampleTimeInSec = ((double)SAMPLING_MS)/1000;
+   KP_y = KP;
+   KI_y =  KI* SampleTimeInSec;
+   KD_y = KD / SampleTimeInSec;
+}
+void set_tunings_x(double KP, double KI, double KD)
+{
+   double SampleTimeInSec = ((double)SAMPLING_MS)/1000;
+   KP_x = KP;
+   KI_x = KI * SampleTimeInSec;
+   KD_x = KD / SampleTimeInSec;
+}
+
 // Updates (in interruption) readings for sensors //
 void update_readings(){
-    time_elapsed+=500*(1E-6);
-    
+    time_elapsed+=5000*(1E-3);
     ReferenceFrame::getReferenceFrame().update(time_elapsed);
 }
 
@@ -55,52 +86,32 @@ void setup()
 
    // == Init motors == //
    
-   Engines.BL.SetSpeed(10);
+   Engines.BL.SetSpeed(0);
    Engines.BL.Start(); 
-   Engines.BR.SetSpeed(10);
+   Engines.BR.SetSpeed(0);
    Engines.BR.Start(); 
-   Engines.FR.SetSpeed(10);
+   Engines.FR.SetSpeed(0);
    Engines.FR.Start(); 
-   Engines.FL.SetSpeed(10);
+   Engines.FL.SetSpeed(0);
    Engines.FL.Start(); 
 
    // == Inicjalizacja zakonczona pomyslnie == //
    count =0;
-   delay(1000);
+   delay(100);
+   
+   
+   // == Inicjalizacja stalych PID == //
+   set_tunings_x(10.0, 0.1, 0.005);
+   set_tunings_y(10.0, 0.1, 0.005);
 }
 
 
-// brak algebry
-
-//kontroler: PID (zaklada ze motorki kreca sie tak zeby anulowac moment pedu)
-
-//P :
-double KP_x = 30.0,KP_y=30.0,KP_z=0.0, KP_h = 10.0;
-double KD_x = 10.0, KD_y = 10.0, KD_z = 0.0;
-//!!!!!!!!!uwaga te stale sa tez zalezne od samplowania!!!!!!!!
-double KI_x = 0.005, KI_y = 0.005, KI_z = 0.1;
-double u_x, u_y, u_z, u_h; // wartosci kontrolowane u_x,u_y to roznica w predkosci zgodny_z_osi - przeciwny_do_osi, u_z nie ma, u_h to wielkosc bazowa
-double e_x_prev=0.0, e_y_prev=0.0, e_z_prev = 0.0;
-double E_x_sum =0.0, E_y_sum =0.0, E_z_sum=0.0;
-double u_base = 9.0; //ile zawsze powinno byc
-double de_x, de_y, de_z;
-
-/*
-* Klasa odpowiedzialna za podazanie za wektorem
-*/
-class VectorPIDTracket{
-public:
-
-};
-
-
-// mamy kompas!
 
 void loop() 
 {
-  delay(5);
+  delay(SAMPLING_MS);
   count +=1;  
-  if(count>800){
+  if(count>(4000/SAMPLING_MS)){
      digitalWrite(LED_YELLOW, count%2==0 ? HIGH: LOW);
      Engines.BL.Stop(); 
      Engines.BR.Stop(); 
@@ -126,23 +137,19 @@ void loop()
    // === Calkuj blad === //
    E_x_sum += error[0];
    E_y_sum += error[1];
-   E_z_sum += error[2];
   
    // === Policz pochodne bledu === ///
    de_x = error[0] - e_x_prev;
    de_y = error[1] - e_y_prev;
-   de_z = error[2] - e_z_prev;
    
    // === Policz sygnaly kontrolne ==== //
    u_x = error[0]*KP_x + de_x*KD_x + E_x_sum*KI_x;
    u_y = error[1]*KP_y + de_y*KD_y + E_y_sum*KI_y;
-   u_h = error[3]*KP_h;   
    u_h = u_base ;//+ sm.getAccelerationLength()*(sm.getAcceleration()[2]>0.0 ? 1.0 :  -1.0)*KP_h;
  
    // === Zapamietaj stare bledy (do pochodnej) === //  
    e_x_prev = error[0];
    e_y_prev = error[1];
-   e_z_prev = error[2];
 
  
    // === Stabilizacja pitch i roll === //
