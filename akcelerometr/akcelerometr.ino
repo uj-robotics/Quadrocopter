@@ -1,62 +1,76 @@
-#include <sensors.h>
-#include <Wire.h>
+//TODO: ogarnac roznice ATMega32 vs ARM
+//TODO: zaklepac przerwania na ARM
+//TODO: nauczyc sie I2C, zeby opowiedziec
 
-double accelerometer_data[3];
-double gyro_data[3];
-MB1260Sensor mb;
-double ultrasonar_data;
+
+#include <Wire.h>
+#include <DueTimer.h>
+#include "reference_frame.h"
+#include "sensors.h"
+
+
+double time_elapsed;
+
+unsigned int LED_RED=4;
+unsigned int LED_GREEN=2;
+
+// Updates (in interruption) readings for sensors //
+void update_readings(){
+    time_elapsed+=500*(1E-6);
+    
+    ReferenceFrame::getReferenceFrame().update(time_elapsed);
+    
+    digitalWrite(LED_RED, digitalRead(LED_RED)^1);
+}
 
 void setup() 
 { 
-  
-   Serial.begin(9600);  
+   pinMode(LED_RED, OUTPUT);
+   pinMode(LED_GREEN, OUTPUT);
+   time_elapsed = 0.0;
+ 
+   Serial.begin(9600);     
    
+   // == Init I2C Interface == //
    i2cInterface::init();
+   
+   // == Init SensorManager == //
    SensorsManager::getSensorsManager().init();
-   mb.init();
+   SensorsManager::getSensorsManager().OnePointCallibration();
+
+   // == Init ReferenceFrame == //
+   ReferenceFrame::getReferenceFrame().init();
+   
+   // == Add interruption for sensor readings == //
+   Timer.getAvailable().attachInterrupt(update_readings).start(500000); // Every 500ms update sensor readings
+
+   // == Inicjalizacja zakonczona pomyslnie == //
+   digitalWrite(LED_GREEN, HIGH);
 }
+
 
 
 
 
 void loop() 
 {
-  static double time_elapsed=0.0;
-  SensorsManager & sm=SensorsManager::getSensorsManager();    
-  sm.update(time_elapsed);
-  
-  /*
-   Serial.print("ACCEL: ");
-   Serial.print(sm.getAcceleration()[0]);
-   Serial.print("\t");
-   Serial.print(sm.getAcceleration()[1]);
-   Serial.print("\t");
-   Serial.print(sm.getAcceleration()[2]);
-   Serial.print("\n");
-  
-  
-   Serial.print("GYRO: ");
-   Serial.print(sm.getAngleAcceleration()[0]);
-   Serial.print("\t");
-   Serial.print(sm.getAngleAcceleration()[1]);
-   Serial.print("\t");
-   Serial.print(sm.getAngleAcceleration()[2]);
-   Serial.print("\n");
-   */
-     
-   /*Serial.print("NORTH: ");
-   Serial.print(sm.getNorth()[0]);
-   Serial.print("\t");
-   Serial.print(sm.getNorth()[1]);
-   Serial.print("\t");
-   Serial.print(sm.getNorth()[2]);
-   Serial.print("\n");
- 
-   delay(300); time_elapsed+=300*(10E-6);*/
+   double * error = ReferenceFrame::getReferenceFrame().getError();
    
+   Serial.print(error[0]);
+   Serial.print(" ");
+   Serial.print(error[1]);
+   Serial.print(" ");
+   Serial.print(error[2]); 
+   Serial.print("\n");
    delay(300);
-   Serial.print("ULTRA: ");
-   mb.get_readings(&ultrasonar_data);
-   Serial.println(ultrasonar_data);
+   
+   
+   /*Serial.print(refFrame->x_measure);
+   Serial.print(" ");
+   Serial.print(refFrame->y_measure);
+   Serial.print(" ");
+   Serial.print(refFrame->z_measure); 
+   Serial.print("\n");*/
+   delay(300);
 }
 
