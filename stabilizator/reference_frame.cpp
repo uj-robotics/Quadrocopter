@@ -18,11 +18,13 @@ void ReferenceFrame::init(double sampling)
 	this->AngleAcceleration = new double[3];
 	this->Acceleration = new double[3];
     this->AccelerationRef = new double[3];
+    this->NorthRef = new double[3];
+    this->North = new double[3];
     this->AngleRef = new double[3];
     this->Angle = new double[3];
     this->Error = new double[3];
 
-    for(int i=0;i<3;++i) this->Error[i] = this->Angle[i] = this->AngleAcceleration[i] = this->Acceleration[i] = this->AngleRef[i]= this->AccelerationRef[i] = 0.0;
+    for(int i=0;i<3;++i) this->North[i] = this->NorthRef[i] =  this->Error[i] = this->Angle[i] = this->AngleAcceleration[i] = this->Acceleration[i] = this->AngleRef[i]= this->AccelerationRef[i] = 0.0;
     this->AccelerationRef[2] = 1.0;
     for(int i=0;i<BUFFER_SIZE;++i) this->BufferAccelerationX[i] = this->BufferAccelerationY[i] = this->BufferAccelerationZ[i] = 0.0;
 
@@ -32,6 +34,7 @@ void ReferenceFrame::init(double sampling)
 
 //UWAGA: W pdf jest ze stala a ma byc taka sama dla low i high pass filter (to moze byc wazne teoretycznie)
 //Wiec dodaj TAU jako stala , a w init() licz z TAU i DT sobie A
+
 
 //poprawic dodac high-pass-filter
 double ReferenceFrame::calcAngleAcceleration(double* Array, double RawData)
@@ -55,6 +58,13 @@ void ReferenceFrame::update(double t, double dt)
 {
 	SensorsManager& sm = SensorsManager::getSensorsManager();
 	sm.update(t);
+
+        // Przypisz kompas
+        const double* newNorthData = sm.getNorth();
+        this->North[0] = newNorthData[0];
+        this->North[1] = newNorthData[1];
+        this->North[2] = newNorthData[2];
+        
 	// Policz akceleracje (low-pass filter)
 	const double* newAccData = sm.getAcceleration();
 	this->Acceleration[0] = calcAcceleration(this->BufferAccelerationX, newAccData[0]);
@@ -76,15 +86,17 @@ void ReferenceFrame::update(double t, double dt)
     ngy = this->Angle[1] + this->AngleAcceleration[1]*dt;
     ngz = this->Angle[2] + this->AngleAcceleration[2]*dt;
 
-    double * eulers ;
+    double * eulers  = get_eulers(this->AccelerationRef, this->Acceleration);
+    double * eulers_to_g = get_eulers_to_g(this->Acceleration);
     // Uwaga zalozenie, ze AccelerationRef jest unormowany
-    if(abs(this->AccelerationRef[2]-1.0)<0.001) eulers = get_eulers_to_g(this->Acceleration);
-    else eulers = get_eulers(this->AccelerationRef, this->Acceleration);
+    if(abs(this->AccelerationRef[2]-1.0)<0.001){
+      eulers[0] = eulers_to_g[0]; eulers[2] = eulers_to_g[2];
+    }
 
     // Uwaga: inna konwencja algebry (get_eulers)
     this->Angle[0] = GYRO_TRUST * ngx + (1-GYRO_TRUST)*eulers[0];
     this->Angle[1] = GYRO_TRUST * ngy + (1-GYRO_TRUST)*eulers[2];
-    this->Angle[2] = GYRO_TRUST * ngz + (1-GYRO_TRUST)*eulers[1];
+    this->Angle[2] = ngz ;// Jak wszystko sie uda mozna tu dodac kompas (jest juz wszystko przygotowane)
 
     // Policz nowe bledy
     this->Error[0] = this->Angle[0] - this->AngleRef[0];
@@ -92,5 +104,6 @@ void ReferenceFrame::update(double t, double dt)
     this->Error[2] = this->Angle[2] - this->AngleRef[2];
 
     delete[] eulers;
+    delete[] eulers_to_g;
 
 }

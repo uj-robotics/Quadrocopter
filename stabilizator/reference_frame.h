@@ -9,16 +9,15 @@ class ReferenceFrame{
 private:
 	int BUFFER_SIZE; const double GYRO_TRUST; const double BUFFER_MS;
 
-
-    double* BufferAccelerationX;
+  
+        double* BufferAccelerationX;
 	double* BufferAccelerationY;
 	double* BufferAccelerationZ;
 	double* AngleAcceleration;
-	double* Acceleration;
-	double* Angle;
+	double* Angle,*North,*Acceleration;
 	double * Error;
     int BufferIndex;
-	double* AccelerationRef, *AngleRef;
+	double* AccelerationRef, *AngleRef, *NorthRef;
 	ReferenceFrame();
     double calcAngleAcceleration(double*, double);
 	double calcAcceleration(double*, double);
