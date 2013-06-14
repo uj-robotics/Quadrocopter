@@ -79,7 +79,7 @@ void setup()
    SensorsManager::getSensorsManager().OnePointCallibration();
 
    // == Init ReferenceFrame == //
-   ReferenceFrame::getReferenceFrame().init(SAMPLING_MS);
+   ReferenceFrame::getReferenceFrame().init(SAMPLING_MS, u_base);
 
    Engines.BL.SetSpeed(0);
    Engines.BL.Start();

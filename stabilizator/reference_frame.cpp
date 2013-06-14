@@ -4,13 +4,15 @@
 // Klasa ktora ocenia pozycje quadrocoptera na podstawie odczytow z silnika: akcelerometr, zyroskop, barometr
 //
 
-ReferenceFrame::ReferenceFrame() : BUFFER_MS(400), GYRO_TRUST(0.9)
+ReferenceFrame::ReferenceFrame() : BUFFER_MS(400), GYRO_TRUST(0.9),THRUST_G(30.0)
 {
 
 }
 
-void ReferenceFrame::init(double sampling)
+void ReferenceFrame::init(double sampling, double ubase)
 {
+	this->setuBase(ubase);
+
     this->BUFFER_SIZE = (int)(BUFFER_MS / sampling);
 	this->BufferAccelerationX = new double[BUFFER_SIZE];
 	this->BufferAccelerationY = new double[BUFFER_SIZE];
@@ -71,6 +73,7 @@ void ReferenceFrame::update(double t, double dt)
 	this->Acceleration[1] = calcAcceleration(this->BufferAccelerationY, newAccData[1]);
 	this->Acceleration[2] = calcAcceleration(this->BufferAccelerationZ, newAccData[2]);
 
+	
 
     // Policz predkosc katowa (high-pass filter)
 	const double* newAngData = sm.getAngleAcceleration();
@@ -86,8 +89,11 @@ void ReferenceFrame::update(double t, double dt)
     ngy = this->Angle[1] + this->AngleAcceleration[1]*dt;
     ngz = this->Angle[2] + this->AngleAcceleration[2]*dt;
 
-    double * eulers  = get_eulers(this->AccelerationRef, this->Acceleration);
-    double * eulers_to_g = get_eulers_to_g(this->Acceleration);
+	
+	double AccelerationAccounted[] = {this->Acceleration[0], this->Acceleration[1], this->Acceleration[2] + max(1.0, this->uBase/THRUST_G)};
+	
+    double * eulers  = get_eulers(this->AccelerationRef, AccelerationAccounted);
+    double * eulers_to_g = get_eulers_to_g(AccelerationAccounted);
     // Uwaga zalozenie, ze AccelerationRef jest unormowany
     if(abs(this->AccelerationRef[2]-1.0)<0.001){
       eulers[0] = eulers_to_g[0]; eulers[2] = eulers_to_g[2];

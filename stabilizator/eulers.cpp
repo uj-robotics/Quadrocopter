@@ -98,9 +98,13 @@ double *get_eulers(const double * vect1,const  double * vect2){
     return euler;
 }
 
-double * get_eulers_to_g(const double * v2){
+double * get_eulers_to_g(const double * vect){
         double * eulers = new double[3];
-       eulers[0] = to_angle(atan2(v2[0],sqrt(v2[1]*v2[1]+v2[2]*v2[2])));
+		
+		double v2[] = {vect[0],vect[1],vect[2]};
+		norm3(v2);
+		
+        eulers[0] = to_angle(atan2(v2[0],sqrt(v2[1]*v2[1]+v2[2]*v2[2])));
         eulers[2] = -to_angle(atan2(v2[1],sqrt(v2[0]*v2[0]+v2[2]*v2[2])));
         eulers[0] =0.0;
         return eulers;
