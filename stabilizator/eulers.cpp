@@ -1,4 +1,4 @@
-#include <cmath>
+#include <math.h>
 
 #include "eulers.h"
 
@@ -98,7 +98,15 @@ double *get_eulers(const double * vect1,const  double * vect2){
     return euler;
 }
 
+double * get_eulers_to_g(const double * v2){
+        double * eulers = new double[3];
+       eulers[0] = to_angle(atan2(v2[0],sqrt(v2[1]*v2[1]+v2[2]*v2[2])));
+        eulers[2] = -to_angle(atan2(v2[1],sqrt(v2[0]*v2[0]+v2[2]*v2[2])));
+        eulers[0] =0.0;
+        return eulers;
+}
 
+/*
 #include <iostream>
 using namespace std;
 #define LOG(x) cout<<#x<<"="<<x;
@@ -124,4 +132,4 @@ int main(void){
 
 
         return 1;
-}
+}*/

@@ -2,6 +2,8 @@
 #define EULERS_H
 // Helpers //
 #define PI 3.14
+#include <Wire.h>
+#include <Servo.h>
 
 /// Some algebra
 double length(const double *vect);
@@ -24,5 +26,5 @@ Bank = rotation about x axis
 
 /// Most important method - get euler angles
 double *get_eulers(const double * vect1,const double * vect2);
-
+double* get_eulers_to_g(const double *);
 #endif
