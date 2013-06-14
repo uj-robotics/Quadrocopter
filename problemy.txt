@@ -1,0 +1,13 @@
+1. Odczyty z wszystkich sensorow (akcelerometr, zyroskop, kompas) przez i2c
+2. Katy eulera - algebra
+3. PID
+4. Przygotowanie techniczne stanowiska
+5. Problemy z wibracja (low pass filter)
+6. Problemy z przyspieszeniem (wlaczenie zyroskopu i calkowanie go)
+
+
+
+czas jak dotad : 14h
+
+
+
