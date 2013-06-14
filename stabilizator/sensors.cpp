@@ -169,22 +169,22 @@ void SensorsManager::init(){
 */
 void SensorsManager ::update(double t){
      //akcelerometr:
-     if(t-m_last_update[0] > m_acc.get_update_freq()){ 
+    // if(t-m_last_update[0] > m_acc.get_update_freq()){ 
                            m_last_update[0]=t; 
                            m_acc.get_readings(m_raw_data[0]); 
                            for(int i=0;i<3;++i) m_data[0][i] = (m_raw_data[0][i] - m_acc_params[i][0])*m_acc_params[i][1];
-     }
+     //}
      //zeroskop:
-     if(t-m_last_update[1] > m_gyro.get_update_freq()){ 
+    // if(t-m_last_update[1] > m_gyro.get_update_freq()){ 
                            m_last_update[1]=t; 
                            m_gyro.get_readings(m_raw_data[1]);
                            for(int i=0;i<3;++i) m_data[1][i] = (m_raw_data[1][i] - m_gyro_params[i][0])*m_gyro_params[i][1];
-     }
+    // }
      
-     if(t-m_last_update[2] > m_compass.get_update_freq()){ 
+     //if(t-m_last_update[2] > m_compass.get_update_freq()){ 
                            m_last_update[2]=t; m_compass.get_readings(m_raw_data[2]); 
                            for(int i=0;i<3;++i) m_data[2][i] = (m_raw_data[2][i] - m_compass_params[i][0])*m_compass_params[i][1];
-     }
+     //}
      
 }
 

@@ -1,15 +1,11 @@
-//TODO: ogarnac roznice ATMega32 vs ARM
-//TODO: zaklepac przerwania na ARM
-//TODO: nauczyc sie I2C, zeby opowiedziec
-
 
 #include <Wire.h>
 #include <Servo.h>
 
-
 #include "reference_frame.h"
 #include "sensors.h"
 #include "EnginesManager.h"
+#include "eulers.h"
 
 EnginesManager Engines;
 
@@ -25,7 +21,7 @@ double KD_x, KD_y;
 double KI_x, KI_y;
 
 double u_x, u_y, u_z, u_h; // wartosci kontrolowane u_x,u_y to roznica w predkosci zgodny_z_osi - przeciwny_do_osi, u_z nie ma, u_h to wielkosc bazowa
-double u_base = 15.0; //ile zawsze powinno byc
+double u_base = 20.0; //ile zawsze powinno byc
 
 //pamiec
 double e_x_prev=0.0, e_y_prev=0.0;
@@ -33,7 +29,9 @@ double E_x_sum =0.0, E_y_sum =0.0;
 double de_x, de_y;
 
 //sampling time in ms
-double SAMPLING_MS = 10.0;
+double SAMPLING_MS = 15.0;
+
+//north reference
 
 void set_tunings_y(double KP, double KI, double KD)
 {
@@ -53,9 +51,11 @@ void set_tunings_x(double KP, double KI, double KD)
 // Updates (in interruption) readings for sensors //
 void update_readings(){
     time_elapsed+=5000*(1E-3);
-    ReferenceFrame::getReferenceFrame().update(time_elapsed);
+    ReferenceFrame::getReferenceFrame().update(time_elapsed, SAMPLING_MS / 1000.0);
 }
-
+//reference acceleration
+double acceleration_ref[]={0.0,0.0,1.0};
+double compass_ref[] = {-50,-317,-172.0};
 int count;
 void setup() 
 { 
@@ -79,13 +79,8 @@ void setup()
    SensorsManager::getSensorsManager().OnePointCallibration();
 
    // == Init ReferenceFrame == //
-   ReferenceFrame::getReferenceFrame().init();
-   
-   // == Add interruption for sensor readings == //
-  // Timer.getAvailable().attachInterrupt(update_readings).start(500000); // Every 500ms update sensor readings
-
-   // == Init motors == //
-   
+   ReferenceFrame::getReferenceFrame().init(SAMPLING_MS);
+ 
    Engines.BL.SetSpeed(0);
    Engines.BL.Start(); 
    Engines.BR.SetSpeed(0);
@@ -102,7 +97,7 @@ void setup()
    
    // == Inicjalizacja stalych PID == //
    set_tunings_x(10.0, 0.1, 0.005);
-   set_tunings_y(10.0, 0.1, 0.005);
+   set_tunings_y(50.0, 0.0, 0.000);
 }
 
 
@@ -122,17 +117,29 @@ void loop()
   
   }
   
-  
   // === Updatuj sensory ==== //
+  ReferenceFrame & rf = ReferenceFrame::getReferenceFrame();
   SensorsManager & sm=SensorsManager::getSensorsManager();  
   update_readings();
-  double * error = ReferenceFrame::getReferenceFrame().getError();
-
+  //const double * rferror = rf.getError();
+  //UWAGA TO JEST NA JANA//
+  //double error[] = {error[0]/90.0, error[1]/90.0, error[2]/90.0};
+ 
+  double * error = rf.getError();
+ 
+  // NIE BRANE POD UWAGE // 
+  const double* compass = sm.getNorth();
+  const double* acceleration = rf.getAcceleration();
+  double * eulers = get_eulers(acceleration_ref, acceleration);
   
-  Serial.print(error[0]);
-  Serial.print(";");
-  Serial.print(error[1]);
+ 
+  for(int i = 0; i < 3; ++i)
+  {
+    Serial.print(eulers[i]);
+    Serial.print("; ");
+  }
   Serial.println();
+  
 
    // === Calkuj blad === //
    E_x_sum += error[0];
@@ -144,7 +151,9 @@ void loop()
    
    // === Policz sygnaly kontrolne ==== //
    u_x = error[0]*KP_x + de_x*KD_x + E_x_sum*KI_x;
+   u_x = 0;
    u_y = error[1]*KP_y + de_y*KD_y + E_y_sum*KI_y;
+//   u_y=0;
    u_h = u_base ;//+ sm.getAccelerationLength()*(sm.getAcceleration()[2]>0.0 ? 1.0 :  -1.0)*KP_h;
  
    // === Zapamietaj stare bledy (do pochodnej) === //  
@@ -153,10 +162,12 @@ void loop()
 
  
    // === Stabilizacja pitch i roll === //
-   Engines.BL.SetSpeed((int)(u_h - u_y/2.0 +u_x/2.0 ));
-   Engines.FR.SetSpeed((int)(u_h + u_y/2.0) - u_x/2.0);
-   Engines.BR.SetSpeed((int)(u_h + u_y/2.0) + u_x/2.0);
+   Engines.BL.SetSpeed((int)(u_h - u_y/2.0 + u_x/2.0 ));
+   Engines.FR.SetSpeed((int)(u_h + u_y/2.0 - u_x/2.0));
+   Engines.BR.SetSpeed((int)(u_h + u_y/2.0 + u_x/2.0));
    Engines.FL.SetSpeed((int)(u_h - u_y/2.0 - u_x/2.0));
+
+   delete [] eulers;
 }
 
 

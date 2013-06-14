@@ -1,12 +1,3 @@
-/** 
-
-* @file sensors.h 
-* @brief definicje klas wszystkich sensorow + funkcje pomocnicze
-*
-* @author --
-*
-* @date 13/12/2012
-*/
 
 
 #ifndef SENSORS_H
@@ -23,13 +14,7 @@ class i2cInterface
 {
 public:
   static void init();
-  /** 
-  * \brief Pisanie na magistrale i2c, uzywane przez wszystkie czujniki
-  */ 
   static void i2c_write(int address, byte reg, byte data);
-  /** 
-  * \brief Czytanie z magistrali i2c
-  */ 
   static void i2c_read(int address, byte reg, int count, byte* data);  
 };
 

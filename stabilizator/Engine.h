@@ -16,8 +16,7 @@ public:
 };
 
 //initializes motor
-Engine::Engine(int pin) : PIN(pin), MAX_SPEED(33
-)
+Engine::Engine(int pin) : PIN(pin), MAX_SPEED(55)
 {
 	this->MOTOR.attach(PIN, 150, 2500);
 	this->MOTOR.write(0);
