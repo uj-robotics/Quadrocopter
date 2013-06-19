@@ -179,8 +179,8 @@ public:
   void init();
   
   const double * getNorth() const{ return m_data[2]; }
-  const double * getAngleAcceleration() const{ return m_data[1];}
-  const double * getAcceleration() const{ return m_data[0]; }
+  const double * getAngleVel() const{ return m_data[1];}
+  const double * getAcc() const{ return m_data[0]; }
   const double getAccelerationLength() const{ return sqrt(m_data[0][0]*m_data[0][0] + m_data[0][1]*m_data[0][1] + m_data[0][2]*m_data[0][2]);  }
   
   static SensorsManager & getSensorsManager();

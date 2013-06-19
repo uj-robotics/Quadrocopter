@@ -10,17 +10,17 @@ private:
 	int BUFFER_SIZE; const double GYRO_TRUST; const double BUFFER_MS; const double THRUST_G ; //THRUST_G - ile na silnikach daje g
 
 	double uBase;
-        double* BufferAccelerationX;
-	double* BufferAccelerationY;
-	double* BufferAccelerationZ;
-	double* AngleAcceleration;
-	double* Angle,*North,*Acceleration;
-	double * Error;
+        double* buffer_acc_X;
+	double* buffer_acc_Y;
+	double* buffer_acc_Z;
+	double* angle_vel;
+	double* angle,*north,*acc;
+	double * error;
     int BufferIndex;
-	double* AccelerationRef, *AngleRef, *NorthRef;
+	double* acc_ref, *angle_ref, *north_ref;
 	ReferenceFrame();
-    double calcAngleAcceleration(double*, double);
-	double calcAcceleration(double*, double);
+    double calcAngleVel(double*, double);
+	double calcAcc(double*, double);
 public:
 
 	static ReferenceFrame& getReferenceFrame(){
@@ -35,10 +35,10 @@ public:
 		this->uBase = val;
 	}
 
-    const double* getError(){ return this->Error; }
-    const double * getAngle() { return this->Angle; }
-    const double* getAcceleration() { return this->Acceleration; }
-    const double* getAngleAcceleration() { return this->AngleAcceleration; }
+    const double* getError(){ return this->error; }
+    const double * getAngle() { return this->angle; }
+    const double* getAcc() { return this->acc; }
+    const double* getAngleVel() { return this->angle_vel; }
 
 };
 

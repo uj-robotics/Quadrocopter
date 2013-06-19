@@ -51,8 +51,8 @@ void update_readings(){
   time_elapsed+=5000*(1E-3);
   ReferenceFrame::getReferenceFrame().update(time_elapsed, Timer::getTimer().SAMPLING_MS / 1000.0);
 }
-//reference acceleration
-double acceleration_ref[]={
+//reference acc
+double acc_ref[]={
   0.0,0.0,1.0};
 double compass_ref[] = {
   -50,-317,-172.0};
@@ -110,9 +110,9 @@ void setup()
   
   //set_tunings_x(0.3, 0.14, 0.006);
   //set_tunings_y(0.3, 0.14, 0.006);
-  set_tunings_x(0.22, 0.14, 0.009);
+  set_tunings_x(0.22, 0.14, 0.023);
   //set_tunings_y(0.22, 0.14, 0.009);
-  set_tunings_y(0.21,0.18,0.011);
+  set_tunings_y(0.24,0.19,0.025);
 
   accAvg = new double[3];
   gyroAvg = new double[3];
@@ -151,7 +151,7 @@ void TC7_Handler()
    TC_GetStatus(TC2, 1);
    EnginesManager& Engines = EnginesManager::getEnginesManager(); 
    
-   if(time_bruno >= 10000 / Timer::getTimer().SAMPLING_MS || time_bruno < 0)
+   if(time_bruno >= 20000 / Timer::getTimer().SAMPLING_MS || time_bruno < 0)
    {
      EnginesManager& Engines = EnginesManager::getEnginesManager();
      Engines.BL.Stop(); Engines.BR.Stop(); Engines.FR.Stop(); Engines.FL.Stop();
@@ -165,8 +165,8 @@ void TC7_Handler()
    E_y_sum += error[1];
 
    // === Policz pochodne bledu === ///
-   de_x = rf.getAngleAcceleration()[0];//error[0] - e_x_prev;
-   de_y = rf.getAngleAcceleration()[1];//error[1] - e_y_prev;
+   de_x = rf.getAngleVel()[0];//error[0] - e_x_prev;
+   de_y = rf.getAngleVel()[1];//error[1] - e_y_prev;
 
 
 
@@ -175,7 +175,7 @@ void TC7_Handler()
    //u_x = 0;
    u_y = error[1]*KP_y + de_y*KD_y + E_y_sum*KI_y;
    //u_y = 0;
-   u_h = u_base ;//+ sm.getAccelerationLength()*(sm.getAcceleration()[2]>0.0 ? 1.0 :  -1.0)*KP_h;
+   u_h = u_base ;//+ sm.getaccLength()*(sm.getacc()[2]>0.0 ? 1.0 :  -1.0)*KP_h;
 
 
    // === Stabilizacja pitch i roll === //
