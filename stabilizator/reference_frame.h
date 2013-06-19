@@ -7,7 +7,7 @@
 
 class ReferenceFrame{
 private:
-	int BUFFER_SIZE; const double GYRO_TRUST; const double BUFFER_MS, const double THRUST_G ; //THRUST_G - ile na silnikach daje g
+	int BUFFER_SIZE; const double GYRO_TRUST; const double BUFFER_MS; const double THRUST_G ; //THRUST_G - ile na silnikach daje g
 
 	double uBase;
         double* BufferAccelerationX;
@@ -37,8 +37,8 @@ public:
 
     const double* getError(){ return this->Error; }
     const double * getAngle() { return this->Angle; }
-	const double* getAcceleration() { return this->Acceleration; }
-	const double* getAngleAcceleration() { return this->AngleAcceleration; }
+    const double* getAcceleration() { return this->Acceleration; }
+    const double* getAngleAcceleration() { return this->AngleAcceleration; }
 
 };
 

@@ -3,7 +3,7 @@
 // Helpers //
 #define PI 3.14
 #include <Wire.h>
-#include <Servo.h>
+//#include <Servo.h>
 
 /// Some algebra
 double length(const double *vect);

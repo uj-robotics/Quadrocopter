@@ -91,7 +91,7 @@ double *get_eulers(const double * vect1,const  double * vect2){
     norm3(axis);
 
     double angle =  get_angle_between(v1,v2);
-    double * euler= to_euler(axis[0],axis[1],axis[2], angle);
+    double * euler= to_euler(axis[1],axis[0],axis[2], angle);
 
     delete [] axis;
 
@@ -104,9 +104,9 @@ double * get_eulers_to_g(const double * vect){
 		double v2[] = {vect[0],vect[1],vect[2]};
 		norm3(v2);
 		
-        eulers[0] = to_angle(atan2(v2[0],sqrt(v2[1]*v2[1]+v2[2]*v2[2])));
-        eulers[2] = -to_angle(atan2(v2[1],sqrt(v2[0]*v2[0]+v2[2]*v2[2])));
-        eulers[0] =0.0;
+        eulers[2] = to_angle(atan2(v2[0],sqrt(v2[1]*v2[1]+v2[2]*v2[2])));
+        eulers[0] = -to_angle(atan2(v2[1],sqrt(v2[0]*v2[0]+v2[2]*v2[2])));
+     
         return eulers;
 }
 

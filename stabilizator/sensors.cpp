@@ -97,7 +97,7 @@ void ITG3200Sensor::init()
   byte data = 0;
   //Set DLPF to 42 Hz (change it if you want) and
   //set the scale to "Full Scale"
-  i2cInterface::i2c_write(ITG3200Sensor::ITG3200_ADDRESS, ITG3200Sensor::ITG3200_REGISTER_DLPF_FS, ITG3200Sensor::ITG3200_FULLSCALE | ITG3200Sensor::ITG3200_42HZ);
+  i2cInterface::i2c_write(ITG3200Sensor::ITG3200_ADDRESS, ITG3200Sensor::ITG3200_REGISTER_DLPF_FS, ITG3200Sensor::ITG3200_FULLSCALE | ITG3200Sensor::ITG3200_20HZ);
   //Sanity check! Make sure the register value is correct.
   i2cInterface::i2c_read(ITG3200Sensor::ITG3200_ADDRESS, ITG3200Sensor::ITG3200_REGISTER_DLPF_FS, 1, &data);
 }
@@ -172,20 +172,28 @@ void SensorsManager ::update(double t){
     // if(t-m_last_update[0] > m_acc.get_update_freq()){ 
                            m_last_update[0]=t; 
                            m_acc.get_readings(m_raw_data[0]); 
-                           for(int i=0;i<3;++i) m_data[0][i] = (m_raw_data[0][i] - m_acc_params[i][0])*m_acc_params[i][1];
+                           for(int i=0;i<3;++i) m_data[0][i] = (m_raw_data[0][i]*m_acc_params[i][1]) - m_acc_params[i][0];
      //}
      //zeroskop:
     // if(t-m_last_update[1] > m_gyro.get_update_freq()){ 
                            m_last_update[1]=t; 
                            m_gyro.get_readings(m_raw_data[1]);
-                           for(int i=0;i<3;++i) m_data[1][i] = (m_raw_data[1][i] - m_gyro_params[i][0])*m_gyro_params[i][1];
+                           
+                           m_last_update[2]=t; m_gyro.get_readings(m_raw_data[1]); 
+                           for(int i=0;i<3;++i) m_data[1][i] = -((m_raw_data[1][i]*m_gyro_params[i][1]) - m_gyro_params[i][0]);                          
+                           // Konwersja do katow eulera w konwencji XZY prawoskretnie
+                           /*m_data[1][0] = - ((m_raw_data[1][1]*m_gyro_params[1][1]) - m_gyro_params[1][0]); //minus tak ze obrot w prawo
+                           
+                           m_data[1][1] = - ((m_raw_data[1][2]*m_gyro_params[2][1]) - m_gyro_params[2][0]); //minus tak ze obrot w prawo
+                           
+                           m_data[1][2] = - ((m_raw_data[1][0]*m_gyro_params[0][1]) - m_gyro_params[0][0]); //minus tak ze obrot w prawo*/
     // }
      
      //if(t-m_last_update[2] > m_compass.get_update_freq()){ 
                            m_last_update[2]=t; m_compass.get_readings(m_raw_data[2]); 
-                           for(int i=0;i<3;++i) m_data[2][i] = (m_raw_data[2][i] - m_compass_params[i][0])*m_compass_params[i][1];
+                           for(int i=0;i<3;++i) m_data[2][i] = (m_raw_data[2][i]*m_compass_params[i][1]) - m_compass_params[i][0];
      //}
-     
+     //delay(20);
 }
 
 

@@ -88,6 +88,7 @@ class ITG3200Sensor: public Sensor
       static const int ITG3200_REGISTER_XMSB = (0x1D);
       static const int ITG3200_REGISTER_DLPF_FS = (0x16);
       static const int  ITG3200_FULLSCALE =(0x03 << 3);
+	  static const int  ITG3200_20HZ=(0x04);
       static const int  ITG3200_42HZ=(0x03);
       static const int ITG3200_MAX_READ=10000; 
       
@@ -140,20 +141,22 @@ public:
 
   /// Trywialna kalibracja, mierzy zero majac skale
   /// Liczy relatywne odchylenie
+  
+  //Acc: 0.03 0.01 0.91,   Gyro: 2.86 -1.41 -0.65
   void OnePointCallibration(){
-       m_acc_params[0][0] = 0.0;
+       m_acc_params[0][0] = 0.03;
        m_acc_params[0][1] = 4.0/1024.0; //skala akcelerometru
-       m_acc_params[1][0]=0.0;
+       m_acc_params[1][0]=0.01;
        m_acc_params[1][1] = 4.0/1024.0; 
        m_acc_params[2][0]=0.0;
        m_acc_params[2][1]=4.0/1024.0;
 
 
-       m_gyro_params[0][0] = 0.0;
+       m_gyro_params[0][0] = 2.86;
        m_gyro_params[0][1] = 1/14.375; 
-       m_gyro_params[1][0]=0.0;
+       m_gyro_params[1][0]=-1.41;
        m_gyro_params[1][1] = 1/14.375; //skala zyroskopu
-       m_gyro_params[2][0]=0.0;
+       m_gyro_params[2][0]=-0.65;
        m_gyro_params[2][1]=1/14.375; 
        
        m_compass_params[0][0] = 0.0;
@@ -166,12 +169,12 @@ public:
        double max_latency = 0.1; //[miliseconds]
        double readings[3][3]; 
        
-       for(int i=0;i<3;++i) {delay(max_latency*1000); m_acc.get_readings(readings[i]);}
+       /*for(int i=0;i<3;++i) {delay(max_latency*1000); m_acc.get_readings(readings[i]);}
        for(int i=0;i<3;++i) m_acc_params[i][0] = (readings[0][i]+readings[1][i]+readings[2][i])/3.0;
        m_acc_params[2][0]-=(1.0/m_acc_params[2][1]); //+1g na Z     
 
        for(int i=0;i<3;++i) {delay(max_latency*1000); m_gyro.get_readings(readings[i]);}
-       for(int i=0;i<3;++i) m_gyro_params[i][0] = (readings[0][i]+readings[1][i]+readings[2][i])/3.0;
+       for(int i=0;i<3;++i) m_gyro_params[i][0] = (readings[0][i]+readings[1][i]+readings[2][i])/3.0;*/
   }
   void init();
   
