@@ -17,14 +17,14 @@ private:
 	double* buffer_acc_X;	//bufor do low-pass filter na osi X
 	double* buffer_acc_Y;	//bufor do low-pass filter na osi Y
 	double* buffer_acc_Z;	//bufor do low-pass filter na osi X
-	int buff_index;			//indeks do buforów
+	int buff_index;			//indeks do buforow
 
 	double* acc;			//przyspieszenie z akcelerometru
-	double* angle_vel;		//prêdkoœæ k¹towa z ¿yroskopu
-	double* north;			//TODO: pó³noc z kompasu
+	double* angle_vel;		//predkosc katowa z zyroskopu
+	double* north;			//TODO: polnoc z kompasu
 
-	double* angle;			//k¹t w³aœciwy
-	double * error;			//b³¹d wzglêdem pozycji ustabilizowanej
+	double* angle;			//kat wlasciwy
+	double * error;			//blad wzgledem pozycji ustabilizowanej
 
 	double* acc_ref;
 	double* angle_ref;

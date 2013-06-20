@@ -25,7 +25,7 @@ public:
 //inicjalizuje silnik
 Engine::Engine(int pin) : PIN(pin), MAX_SPEED(50)
 {
-	this->MOTOR.attach(PIN, 150, 2500); //ustawiam PIN, przez który idzie sygna³, a tak¿e d³ugoœæ minimalnego i maksymalnego sygna³u w mikrosekundach
+	this->MOTOR.attach(PIN, 150, 2500); //ustawiam PIN, przez ktory idzie sygnal, a takze dlugosc minimalnego i maksymalnego sygnalu w mikrosekundach
 	this->MOTOR.write(0);
 	this->is_active = false;
 	this->speed = 0;
@@ -37,7 +37,7 @@ const int Engine::getPIN()
 	return this->PIN;
 }
 
-//nadaje okreœlon¹ prêdkoœæ docelow¹ temu silnikowi (w rzeczywistoœci value = 0..90, lecz dla testów ograniczyliœmy przez MAX_SPEED do 0..50)
+//nadaje okreslona predkosc docelowa temu silnikowi (w rzeczywistosci value = 0..90, lecz dla testow ograniczylismy przez MAX_SPEED do 0..50)
 void Engine::setSpeed(int value)
 { 
 	if(value < 0)
@@ -51,7 +51,7 @@ void Engine::setSpeed(int value)
 		this->MOTOR.write(this->speed);
 }
 
-//uruchamia ten silnik z nadan¹ wczeœniej prêdkoœci¹
+//uruchamia ten silnik z nadana wczesniej predkoscia
 void Engine::start()
 {
 	this->is_active = true;
