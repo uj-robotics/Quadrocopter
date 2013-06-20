@@ -1,37 +1,44 @@
+#ifndef ENGINE_H
+#define ENGINE_H
+
 class Engine
 {
 private:
 	const int PIN;
+	const int MAX_SPEED;
 	Servo MOTOR;
-	bool isActive;
+	bool is_active;
 	int speed;
-        const int MAX_SPEED;
 
 public:
 	Engine(int);
-	const int GetPIN();
-	void SetSpeed(int);
-	void Start();
-	void Stop();
+	const int getPIN();
+	void setSpeed(int);
+	void start();
+	void stop();
 };
 
-//initializes motor
-Engine::Engine(int pin) : PIN(pin), MAX_SPEED(55)
+
+
+
+
+//inicjalizuje silnik
+Engine::Engine(int pin) : PIN(pin), MAX_SPEED(50)
 {
-	this->MOTOR.attach(PIN, 150, 2500);
+	this->MOTOR.attach(PIN, 150, 2500); //ustawiam PIN, przez który idzie sygna³, a tak¿e d³ugoœæ minimalnego i maksymalnego sygna³u w mikrosekundach
 	this->MOTOR.write(0);
-	this->isActive = false;
+	this->is_active = false;
 	this->speed = 0;
 }
 
-//gets this engine's signal PIN
-const int Engine::GetPIN()
+//pobiera numer PINu
+const int Engine::getPIN()
 {
 	return this->PIN;
 }
 
-//sets desired speed to this engine
-void Engine::SetSpeed(int value)
+//nadaje okreœlon¹ prêdkoœæ docelow¹ temu silnikowi (w rzeczywistoœci value = 0..90, lecz dla testów ograniczyliœmy przez MAX_SPEED do 0..50)
+void Engine::setSpeed(int value)
 { 
 	if(value < 0)
 		value = 0;
@@ -40,23 +47,22 @@ void Engine::SetSpeed(int value)
 
 	this->speed = value;
 
-	if(isActive)
+	if(is_active)
 		this->MOTOR.write(this->speed);
-
-       // if(value == 0)
-       //    this->isActive = false;
 }
 
-//launches this engine
-void Engine::Start()
+//uruchamia ten silnik z nadan¹ wczeœniej prêdkoœci¹
+void Engine::start()
 {
-	this->isActive = true;
+	this->is_active = true;
 	this->MOTOR.write(this->speed);
 }
 
-//stops this engine
-void Engine::Stop()
+//zatrzymuje silnik
+void Engine::stop()
 {
-	this->isActive = false;
+	this->is_active = false;
 	this->MOTOR.write(0);
 }
+
+#endif

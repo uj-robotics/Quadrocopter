@@ -3,9 +3,9 @@
 
 #include "reference_frame.h"
 #include "sensors.h"
-#include "EnginesManager.h"
+#include "engines_manager.h"
 #include "eulers.h"
-#include "Timer.h"
+#include "timer.h"
 
 //EnginesManager Engines;
 
@@ -88,14 +88,14 @@ void setup()
 
   EnginesManager& Engines = EnginesManager::getEnginesManager();
   
-  Engines.BL.SetSpeed(u_base);
-  Engines.BL.Start();
-  Engines.BR.SetSpeed(u_base);
-  Engines.BR.Start();
-  Engines.FR.SetSpeed(u_base);
-  Engines.FR.Start();
-  Engines.FL.SetSpeed(u_base);
-  Engines.FL.Start();
+  Engines.BL.setSpeed(u_base);
+  Engines.BL.start();
+  Engines.BR.setSpeed(u_base);
+  Engines.BR.start();
+  Engines.FR.setSpeed(u_base);
+  Engines.FR.start();
+  Engines.FL.setSpeed(u_base);
+  Engines.FL.start();
 
   // == Inicjalizacja zakonczona pomyslnie == //
   count =0;
@@ -153,8 +153,7 @@ void TC7_Handler()
    
    if(time_bruno >= 20000 / Timer::getTimer().SAMPLING_MS || time_bruno < 0)
    {
-     EnginesManager& Engines = EnginesManager::getEnginesManager();
-     Engines.BL.Stop(); Engines.BR.Stop(); Engines.FR.Stop(); Engines.FL.Stop();
+     Engines.BL.stop(); Engines.BR.stop(); Engines.FR.stop(); Engines.FL.stop();
      return;
    }
    
@@ -179,10 +178,10 @@ void TC7_Handler()
 
 
    // === Stabilizacja pitch i roll === //
-   Engines.BL.SetSpeed((int)(u_h + u_x/2.0 + u_y/2.0 ));
-   Engines.FR.SetSpeed((int)(u_h - u_x/2.0 - u_y/2.0));
-   Engines.BR.SetSpeed((int)(u_h - u_x/2.0 + u_y/2.0));
-   Engines.FL.SetSpeed((int)(u_h + u_x/2.0 - u_y/2.0));
+   Engines.BL.setSpeed((int)(u_h + u_x/2.0 + u_y/2.0 ));
+   Engines.FR.setSpeed((int)(u_h - u_x/2.0 - u_y/2.0));
+   Engines.BR.setSpeed((int)(u_h - u_x/2.0 + u_y/2.0));
+   Engines.FL.setSpeed((int)(u_h + u_x/2.0 - u_y/2.0));
    
   /*accAvg[0] += acc[0];
    accAvg[1] += acc[1];
