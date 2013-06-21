@@ -34,6 +34,11 @@ private:
 	double* north_ref;
 
 	ReferenceFrame();
+	/*
+    * Low-pass filter
+    * @param Array specified buffer array
+    * @param raw_data new data to be added to measurements
+    */
 	double calcAcc(double*, double);
 
 public:
@@ -44,8 +49,17 @@ public:
 		return rf;
 	}
 
-
+    /*
+    *Initialize reference frame
+    *@param sampling [in s] time between sensor sampling
+    *@param ubase default drag
+    */
 	void init(double, double);
+	/*
+    * Update reference frame
+    * @param t actual time [in s]
+    * @param dt time from the last update [in ms]
+    */
 	void update(double, double);
 	void setuBase(double);
 

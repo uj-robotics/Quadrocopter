@@ -10,11 +10,7 @@ void ReferenceFrame::setuBase(double val)
 {
 	this->uBase = val;
 }
-/*
-*Initialize reference frame
-*@param sampling [in s] time between sensor sampling
-*@param ubase default drag
-*/
+
 void ReferenceFrame::init(double sampling, double ubase)
 {
 	this->setuBase(ubase);
@@ -38,11 +34,7 @@ void ReferenceFrame::init(double sampling, double ubase)
 
 }
 
-/*
-* Low-pass filter
-* @param Array specified buffer array
-* @param raw_data new data to be added to measurements
-*/
+
 double ReferenceFrame::calcAcc(double* Array, double raw_data)
 {
 	Array[this->buff_index] = raw_data;
@@ -54,11 +46,7 @@ double ReferenceFrame::calcAcc(double* Array, double raw_data)
 	return (double)sum / BUFFER_SIZE;
 }
 
-/*
-* Update reference frame
-* @param t actual time [in s]
-* @param dt time from the last update [in ms]
-*/
+
 void ReferenceFrame::update(double t, double dt)
 {
 	SensorsManager& sm = SensorsManager::getSensorsManager();
