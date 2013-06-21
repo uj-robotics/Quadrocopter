@@ -14,23 +14,23 @@ private:
 	int BUFFER_SIZE;
 	const double GYRO_TRUST; //constant for accounting for drag
 	const double BUFFER_MS; //low pass filter : window size for accumulating readings
-	const double THRUST_G ;	//ile na silnikach daje g
+	const double THRUST_G ;	//g on engines
 	double uBase;
 
-	double* buffer_acc_X;	//bufor do low-pass filter na osi X
-	double* buffer_acc_Y;	//bufor do low-pass filter na osi Y
-	double* buffer_acc_Z;	//bufor do low-pass filter na osi X
-	int buff_index;			//indeks do buforów
+	double* buffer_acc_X;	//low-pass filter buffer for x-axis
+	double* buffer_acc_Y;	//low-pass filter buffer for y-axis
+	double* buffer_acc_Z;	//low-pass filter buffer for z-axis
+	int buff_index;			//index assigned to all buffers
 
-	double* acc;			//przyspieszenie z akcelerometru
-	double* angle_vel;		//prêdkoœæ k¹towa z ¿yroskopu
-	double* north;			//TODO: pó³noc z kompasu
+	double* acc;			//acceleration from accelerometer
+	double* angle_vel;		//angular rate from gyroscope
+	double* north;			//TODO: north from compass
 
-	double* angle;			//k¹t w³aœciwy
-	double * error;			//b³¹d wzglêdem pozycji ustabilizowanej
+	double* angle;			//final angle
+	double * error;
 
 	double* acc_ref;
-	double* angle_ref;      //our quadrocopter will be positioning it self to this angle
+	double* angle_ref;      //our quadrocopter will be positioning itself to this angle
 	double* north_ref;
 
 	ReferenceFrame();

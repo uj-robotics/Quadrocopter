@@ -38,10 +38,14 @@ void ReferenceFrame::init(double sampling, double ubase)
 
 }
 
-///low-pass filter
-double ReferenceFrame::calcAcc(double* Array, double RawData)
+/*
+* Low-pass filter
+* @param Array specified buffer array
+* @param raw_data new data to be added to measurements
+*/
+double ReferenceFrame::calcAcc(double* Array, double raw_data)
 {
-	Array[this->buff_index] = RawData;
+	Array[this->buff_index] = raw_data;
 
 	double sum = 0;
 	for(int i = 0; i < this->BUFFER_SIZE; ++i)
@@ -60,13 +64,13 @@ void ReferenceFrame::update(double t, double dt)
 	SensorsManager& sm = SensorsManager::getSensorsManager();
 	sm.update(t);
 
-	//przypisuj� kompas
+	//TODO: calculates compass data
 	const double* newNorthData = sm.getNorth();
 	this->north[0] = newNorthData[0];
 	this->north[1] = newNorthData[1];
 	this->north[2] = newNorthData[2];
 
-	//licz� przyspieszenie (low-pass filter)
+	//calculates acceleration (low-pass filter)
 	const double* new_acc = sm.getAcc();
 	this->acc[0] = calcAcc(this->buffer_acc_X, new_acc[0]);
 	this->acc[1] = calcAcc(this->buffer_acc_Y, new_acc[1]);
@@ -74,7 +78,7 @@ void ReferenceFrame::update(double t, double dt)
 
 	buff_index = (++buff_index) % BUFFER_SIZE;
 
-	//licz� pr�dko�� k�tow�
+	//calculates angular rate
 	const double* new_ang = sm.getAngleVel();
 	this->angle_vel[0] = new_ang[0];
 	this->angle_vel[1] = new_ang[1];
@@ -82,17 +86,19 @@ void ReferenceFrame::update(double t, double dt)
 
 	double acc_accounted[] = { this->acc[0], this->acc[1], this->acc[2] + min(0.0, this->uBase/THRUST_G)  };
 
+	//assigns Euler's angles
 	double* eulers  = get_eulers(this->acc_ref, acc_accounted);
 
-	eulers[1] = 0.0; //brak kompasu
+	//TODO: assigns compass
+	eulers[1] = 0.0;
 
-	//licz� w�a�ciwy k�t z complementary filter
+	//calculates final angle with complementary filter
 	double coef = 0.49 / (0.49 + dt);
 	this->angle[0] = coef * (this->angle[0] + this->angle_vel[0] * dt) + (1-coef) * eulers[0];
 	this->angle[1] = coef * (this->angle[1] + this->angle_vel[1] * dt) + (1-coef) * eulers[2];
 	this->angle[2] = coef * (this->angle[2] + this->angle_vel[2] * dt) + (1-coef) * eulers[1];
 
-	//licz� nowe b��dy
+	//calculates current errors
 	this->error[0] = this->angle[0] - this->angle_ref[0];
 	this->error[1] = this->angle[1] - this->angle_ref[1];
 	this->error[2] = this->angle[2] - this->angle_ref[2];
