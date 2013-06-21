@@ -5,12 +5,15 @@
 #include "sensors.h"
 #include "eulers.h"
 
+/*
+* Class responsible for estimating position of the quadrocopter (basing on filters and sensors)
+*/
 class ReferenceFrame
 {
 private:
 	int BUFFER_SIZE;
-	const double GYRO_TRUST;
-	const double BUFFER_MS;
+	const double GYRO_TRUST; //constant for accounting for drag
+	const double BUFFER_MS; //low pass filter : window size for accumulating readings
 	const double THRUST_G ;	//ile na silnikach daje g
 	double uBase;
 
@@ -27,23 +30,26 @@ private:
 	double * error;			//b³¹d wzglêdem pozycji ustabilizowanej
 
 	double* acc_ref;
-	double* angle_ref;
+	double* angle_ref;      //our quadrocopter will be positioning it self to this angle
 	double* north_ref;
 
 	ReferenceFrame();
 	double calcAcc(double*, double);
 
 public:
-	//zwraca obiekt klasy singleton
+
 	static ReferenceFrame& getReferenceFrame()
 	{
 		static ReferenceFrame rf;
 		return rf;
 	}
 
+
 	void init(double, double);
 	void update(double, double);
 	void setuBase(double);
+
+
 	const double* getError() { return this->error; }
 	const double * getAngle() { return this->angle; }
 	const double* getAcc() { return this->acc; }

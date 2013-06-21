@@ -7,7 +7,6 @@
 #include "eulers.h"
 #include "timer.h"
 
-//EnginesManager Engines;
 
 double time_elapsed;
 int time_bruno;
@@ -16,21 +15,20 @@ unsigned int LED_RED=4;
 unsigned int LED_GREEN=2;
 unsigned int LED_YELLOW=3;
 
-// PID stale //
+// PID constants
 double KP_x ,KP_y;
 double KD_x, KD_y;
 double KI_x, KI_y;
 
-double u_x, u_y, u_z, u_h; // wartosci kontrolowane u_x,u_y to roznica w predkosci zgodny_z_osi - przeciwny_do_osi, u_z nie ma, u_h to wielkosc bazowa
-double u_base = 30.0; //ile zawsze powinno byc
+double u_x, u_y, u_z, u_h; // Control signals on each axis, where magnitude is difference from u_base
+double u_base = 30.0; //Control signal base (no height measurements so it can hover)
 
-//pamiec
+// PID variables
 double e_x_prev=0.0, e_y_prev=0.0;
 double E_x_sum =0.0, E_y_sum =0.0;
 double de_x, de_y;
 
-//north reference
-
+// Set PID constants taking into account time step
 void set_tunings_y(double KP, double KI, double KD)
 {
   double SampleTimeInSec = ((double)Timer::getTimer().PID_MS)/1000;
@@ -51,18 +49,11 @@ void update_readings(){
   time_elapsed+=5000*(1E-3);
   ReferenceFrame::getReferenceFrame().update(time_elapsed, Timer::getTimer().SAMPLING_MS / 1000.0);
 }
-//reference acc
-double acc_ref[]={
-  0.0,0.0,1.0};
-double compass_ref[] = {
-  -50,-317,-172.0};
-int count;
-
-double* accAvg;
-double* gyroAvg;
 
 void setup()
 {
+
+  //Setups LEDS for diagnosing 
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
@@ -88,6 +79,7 @@ void setup()
 
   EnginesManager& Engines = EnginesManager::getEnginesManager();
   
+  // == Init Engines == //
   Engines.BL.setSpeed(u_base);
   Engines.BL.start();
   Engines.BR.setSpeed(u_base);
@@ -97,21 +89,16 @@ void setup()
   Engines.FL.setSpeed(u_base);
   Engines.FL.start();
 
-  // == Inicjalizacja zakonczona pomyslnie == //
+  // == Init successfull == //
   count =0;
-  //delay(100);
-
-  // == Inicjalizacja timera == //
+  
+  // == Init timers == //
   Timer::getTimer().startTimer(TC2, 0, TC6_IRQn, Timer::getTimer().SAMPLING_MS);
   Timer::getTimer().startTimer(TC2, 1, TC7_IRQn, Timer::getTimer().PID_MS);
 
 
-  // == Inicjalizacja stalych PID == //
-  
-  //set_tunings_x(0.3, 0.14, 0.006);
-  //set_tunings_y(0.3, 0.14, 0.006);
+  // ==  Set PID constants == //
   set_tunings_x(0.22, 0.14, 0.023);
-  //set_tunings_y(0.22, 0.14, 0.009);
   set_tunings_y(0.24,0.19,0.025);
 
   accAvg = new double[3];
@@ -122,6 +109,7 @@ void setup()
 
 const double* ang;
 
+//One of two main timers : fetching data from sensors
 void TC6_Handler()
 {
   TC_GetStatus(TC2, 0);
@@ -131,10 +119,9 @@ void TC6_Handler()
   ReferenceFrame& rf = ReferenceFrame::getReferenceFrame();
   rf.update(time_elapsed, Timer::getTimer().SAMPLING_MS / 1000.0);
 
-  //SensorsManager& sm = SensorsManager::getSensorsManager();
-
   ang = rf.getAngle();
-
+  
+  /*Write angles for visualisation*/
   if(time_bruno % 5 == 0)
   {
     Serial.print(ang[0]);
@@ -146,11 +133,13 @@ void TC6_Handler()
   }
 }
 
+//Second timer : PID regulator (separated because PID is slower, because engines take a lot of CPU time)
 void TC7_Handler()
 {
    TC_GetStatus(TC2, 1);
    EnginesManager& Engines = EnginesManager::getEnginesManager(); 
    
+   //For security reasons
    if(time_bruno >= 20000 / Timer::getTimer().SAMPLING_MS || time_bruno < 0)
    {
      Engines.BL.stop(); Engines.BR.stop(); Engines.FR.stop(); Engines.FL.stop();
@@ -163,50 +152,23 @@ void TC7_Handler()
    E_x_sum += error[0];
    E_y_sum += error[1];
 
-   // === Policz pochodne bledu === ///
-   de_x = rf.getAngleVel()[0];//error[0] - e_x_prev;
-   de_y = rf.getAngleVel()[1];//error[1] - e_y_prev;
+   // === Calculate error derivatives (angle velocity)  === ///
+   de_x = rf.getAngleVel()[0];
+   de_y = rf.getAngleVel()[1];
 
 
 
-   // === Policz sygnaly kontrolne ==== //
+   // === Calculate control signals ==== //
    u_x = error[0]*KP_x + de_x*KD_x + E_x_sum*KI_x;
-   //u_x = 0;
    u_y = error[1]*KP_y + de_y*KD_y + E_y_sum*KI_y;
-   //u_y = 0;
-   u_h = u_base ;//+ sm.getaccLength()*(sm.getacc()[2]>0.0 ? 1.0 :  -1.0)*KP_h;
+   u_h = u_base ; //TODO : add height PID
 
 
-   // === Stabilizacja pitch i roll === //
+   // === PID signals === //
    Engines.BL.setSpeed((int)(u_h + u_x/2.0 + u_y/2.0 ));
    Engines.FR.setSpeed((int)(u_h - u_x/2.0 - u_y/2.0));
    Engines.BR.setSpeed((int)(u_h - u_x/2.0 + u_y/2.0));
    Engines.FL.setSpeed((int)(u_h + u_x/2.0 - u_y/2.0));
-   
-  /*accAvg[0] += acc[0];
-   accAvg[1] += acc[1];
-   accAvg[2] += acc[2];
-   gyroAvg[0] += gyro[0];
-   gyroAvg[1] += gyro[1];
-   gyroAvg[2] += gyro[2];
-   
-   if(time_bruno % 500 == 0)
-   {
-   Serial.print("Acc: ");
-   Serial.print(accAvg[0] / 500);
-   Serial.print(" ");
-   Serial.print(accAvg[1] / 500);
-   Serial.print(" ");
-   Serial.print(accAvg[2] / 500);
-   Serial.print(",   Gyro: ");
-   Serial.print(gyroAvg[0] / 500);
-   Serial.print(" ");
-   Serial.print(gyroAvg[1] / 500);
-   Serial.print(" ");
-   Serial.println(gyroAvg[2] / 500);
-   accAvg[0] = accAvg[1] = accAvg[2] = 0;
-   gyroAvg[0] = gyroAvg[1] = gyroAvg[2] = 0;
-   }*/ 
 }
 
 void loop() {

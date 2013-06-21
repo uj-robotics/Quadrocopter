@@ -1,17 +1,20 @@
 #include "sensors.h"
 #include "reference_frame.h"
-//
-// Klasa ktora ocenia pozycje quadrocoptera na podstawie odczytow z silnika: akcelerometr, zyroskop, barometr
-//
 
-ReferenceFrame::ReferenceFrame() : 
+
+ReferenceFrame::ReferenceFrame() :
 	BUFFER_MS(400), GYRO_TRUST(0.9),THRUST_G(100.0) {}
+
 
 void ReferenceFrame::setuBase(double val)
 {
 	this->uBase = val;
 }
-
+/*
+*Initialize reference frame
+*@param sampling [in s] time between sensor sampling
+*@param ubase default drag
+*/
 void ReferenceFrame::init(double sampling, double ubase)
 {
 	this->setuBase(ubase);
@@ -35,7 +38,7 @@ void ReferenceFrame::init(double sampling, double ubase)
 
 }
 
-//low-pass filter
+///low-pass filter
 double ReferenceFrame::calcAcc(double* Array, double RawData)
 {
 	Array[this->buff_index] = RawData;
@@ -47,6 +50,11 @@ double ReferenceFrame::calcAcc(double* Array, double RawData)
 	return (double)sum / BUFFER_SIZE;
 }
 
+/*
+* Update reference frame
+* @param t actual time [in s]
+* @param dt time from the last update [in ms]
+*/
 void ReferenceFrame::update(double t, double dt)
 {
 	SensorsManager& sm = SensorsManager::getSensorsManager();
